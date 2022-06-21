@@ -1,6 +1,6 @@
 import { Book } from "../models/book";
 
-export interface ifStore {
+export interface ifBookSearchStore {
   isLoading: boolean;
   results: Book[];
 }
