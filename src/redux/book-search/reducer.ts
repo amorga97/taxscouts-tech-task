@@ -1,5 +1,5 @@
 import { createReducer } from "@reduxjs/toolkit";
-import { ifStore } from "../interfaces/store-interface";
+import { ifStore } from "../../interfaces/store-interface";
 import * as actions from "./action-creators";
 
 const initialState: ifStore = { isLoading: false, results: [] };
