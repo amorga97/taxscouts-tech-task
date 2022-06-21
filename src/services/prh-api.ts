@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Book } from "../models/book";
 
 const url = `https://api.penguinrandomhouse.com/resources/v2/title/domains/PRH.US/`;
 const apiKey = process.env.REACT_APP_PRH_API_KEY;
@@ -34,6 +35,6 @@ export const getFurtherInfo = async (results: { key: string }[]) => {
 
   return (await Promise.all(promiseArray)).map((item) => {
     const { title, _links, isbn } = item;
-    return { title, cover: _links[1].href, isbn };
+    return new Book(title, isbn, _links[1].href);
   });
 };
