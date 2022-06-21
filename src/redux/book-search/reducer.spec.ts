@@ -10,7 +10,7 @@ describe("Given bookSearchReducer", () => {
       expectedState: { isLoading: false, results: [mockBook] },
     },
     {
-      action: actions.setLoading(),
+      action: actions.toggleLoading(),
       expectedState: { isLoading: true, results: [] },
     },
     {
