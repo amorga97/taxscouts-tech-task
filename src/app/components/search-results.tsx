@@ -3,8 +3,11 @@ import { Book } from "../../models/book";
 import { predictiveSearch } from "../../services/prh-api";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
+import { useDispatch } from "react-redux";
+import * as action from "../../redux/book-search/action-creators";
 
 export function SearchResults({ searchInput }: { searchInput: string }) {
+  const dispatch = useDispatch();
   const { ref, inView } = useInView();
 
   const {
@@ -26,9 +29,26 @@ export function SearchResults({ searchInput }: { searchInput: string }) {
     }
   );
 
+  let loadedResults: Book[] = [];
+
+  if (!isLoading && !isError) {
+    const pagesData = [
+      ...(data?.pages as {
+        books: { title: any; isbn: any; coverSrc: any }[];
+        next: number | undefined;
+      }[]),
+    ].reduce((prev, curr) => ({
+      ...prev,
+      books: [...prev.books, ...curr.books],
+    }));
+
+    loadedResults = pagesData.books;
+  }
+
   useEffect(() => {
     if (inView) {
       fetchNextPage();
+      dispatch(action.loadResults(loadedResults));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inView]);

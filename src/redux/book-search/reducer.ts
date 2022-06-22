@@ -9,7 +9,7 @@ const initialState: ifBookSearchStore = {
 
 export const bookSearchReducer = createReducer(initialState, (builder) => {
   builder
-    .addCase(actions.loadBooks, (state, action) => {
+    .addCase(actions.loadResults, (state, action) => {
       return { ...state, isLoading: false, results: action.payload };
     })
     .addCase(actions.toggleLoading, (state) => ({

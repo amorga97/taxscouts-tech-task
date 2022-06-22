@@ -6,7 +6,7 @@ describe("Given bookSearchReducer", () => {
   const mockBook = new Book("test", "123", "test");
   const cases = [
     {
-      action: actions.loadBooks([mockBook]),
+      action: actions.loadResults([mockBook]),
       expectedState: { isLoading: false, results: [mockBook] },
     },
     {
