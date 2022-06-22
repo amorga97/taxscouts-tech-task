@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { SearchField } from "./search-field";
-import { SearchResults } from "./search-results";
+import { SearchField } from "./search-field/search-field";
+import { SearchResults } from "./search-results/search-results";
 
 export function QuickSearch() {
   const [inputValue, setInputValue] = useState("");
