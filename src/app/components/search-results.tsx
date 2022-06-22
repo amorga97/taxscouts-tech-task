@@ -1,52 +1,65 @@
-import { useQuery } from "react-query";
-import { useDispatch } from "react-redux";
-
+import { useInfiniteQuery } from "react-query";
 import { Book } from "../../models/book";
-
-import { getFurtherInfo, predictiveSearch } from "../../services/prh-api";
-import * as action from "../../redux/book-search/action-creators";
+import { predictiveSearch } from "../../services/prh-api";
+import { useEffect } from "react";
+import { useInView } from "react-intersection-observer";
 
 export function SearchResults({ searchInput }: { searchInput: string }) {
-  const dispatch = useDispatch();
-  console.log("render");
-
-  const { data: worklist } = useQuery(["predictive", searchInput], () => {
-    return predictiveSearch(searchInput);
-  });
+  const { ref, inView } = useInView();
 
   const {
-    isIdle,
-    data: books,
+    data,
     isLoading,
     isError,
-  } = useQuery(
-    ["books", worklist],
-    () => {
-      return getFurtherInfo(worklist);
+    fetchNextPage,
+    isFetchingNextPage,
+    hasNextPage,
+  } = useInfiniteQuery(
+    ["predictive", searchInput],
+    ({ pageParam = 0 }) => {
+      return predictiveSearch(searchInput, pageParam);
     },
     {
-      enabled: !!worklist,
+      getNextPageParam: (lastPage) => {
+        return lastPage.next;
+      },
     }
   );
 
-  if (isLoading || isIdle) {
+  useEffect(() => {
+    if (inView) {
+      fetchNextPage();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inView]);
+
+  if (isLoading) {
     return <span>Loading...</span>;
   }
-  dispatch(action.toggleLoading());
 
   if (isError) {
     return <span>Error...</span>;
   }
-  dispatch(action.loadBooks(books));
 
   return (
     <>
-      {books.map((book: Book) => (
-        <li key={book.isbn}>
-          <h2>{book.title}</h2>
-          <img src={book.coverSrc} alt="" />
-        </li>
+      {data?.pages.map((page) => (
+        <>
+          {page.books.map((book: Book) => (
+            <li key={book.isbn}>
+              <h2>{book.title}</h2>
+              <img src={book.coverSrc} alt="" />
+            </li>
+          ))}
+        </>
       ))}
+      <p ref={ref}>
+        {isFetchingNextPage
+          ? "Loading more..."
+          : hasNextPage
+          ? "Load Newer"
+          : "Nothing more to load"}
+      </p>
     </>
   );
 }
