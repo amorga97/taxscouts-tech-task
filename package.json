@@ -11,9 +11,12 @@
     "@types/node": "^16.11.41",
     "@types/react": "^18.0.14",
     "@types/react-dom": "^18.0.5",
+    "axios": "^0.27.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-intersection-observer": "^9.3.3",
     "react-query": "^3.39.1",
+    "react-redux": "^8.0.2",
     "react-redux-typescript": "^3.0.0-rc.3",
     "react-scripts": "5.0.1",
     "typescript": "^4.7.4",
@@ -45,5 +48,18 @@
   },
   "devDependencies": {
     "@types/react-redux": "^7.1.24"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/index.tsx",
+      "!src/App.tsx",
+      "!src/react-app-env.d.ts",
+      "!src/reportWebVitals.ts",
+      "!src/utils/test-utils.tsx",
+      "!src/redux/store.ts",
+      "!src/interfaces/*",
+      "!src/hooks/use-fetch-books.tsx"
+    ]
   }
 }
