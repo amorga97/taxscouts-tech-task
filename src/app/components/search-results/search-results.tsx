@@ -1,10 +1,10 @@
-import { useInfiniteQuery } from "react-query";
 import { Book } from "../../../models/book";
-import { predictiveSearch } from "../../../services/prh-api";
 import React, { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { useDispatch } from "react-redux";
 import * as action from "../../../redux/book-search/action-creators";
+import { useFetchBooks } from "../../../hooks/use-fetch-books";
+import { getAllLoadedResults } from "./helpers";
 
 export function SearchResults({ searchInput }: { searchInput: string }) {
   const dispatch = useDispatch();
@@ -17,32 +17,12 @@ export function SearchResults({ searchInput }: { searchInput: string }) {
     fetchNextPage,
     isFetchingNextPage,
     hasNextPage,
-  } = useInfiniteQuery(
-    ["predictive", searchInput],
-    ({ pageParam = 0 }) => {
-      return predictiveSearch(searchInput, pageParam);
-    },
-    {
-      getNextPageParam: (lastPage) => {
-        return lastPage.next;
-      },
-    }
-  );
+  } = useFetchBooks(searchInput);
 
   let loadedResults: Book[] = [];
 
   if (!isLoading && !isError) {
-    const pagesData = [
-      ...(data?.pages as {
-        books: { title: any; isbn: any; coverSrc: any }[];
-        next: number | undefined;
-      }[]),
-    ].reduce((prev, curr) => ({
-      ...prev,
-      books: [...prev.books, ...curr.books],
-    }));
-
-    loadedResults = pagesData.books;
+    loadedResults = getAllLoadedResults(data!);
   }
 
   useEffect(() => {
