@@ -8,16 +8,10 @@ import { getAllLoadedResults } from "./helpers";
 
 export function SearchResults({ searchInput }: { searchInput: string }) {
   const dispatch = useDispatch();
-  const { ref, inView } = useInView();
+  const [ref, inView] = useInView();
 
-  const {
-    data,
-    isLoading,
-    isError,
-    fetchNextPage,
-    isFetchingNextPage,
-    hasNextPage,
-  } = useFetchBooks(searchInput);
+  const { data, isLoading, isError, fetchNextPage, isFetchingNextPage } =
+    useFetchBooks(searchInput);
 
   let loadedResults: Book[] = [];
 
@@ -54,11 +48,7 @@ export function SearchResults({ searchInput }: { searchInput: string }) {
         </React.Fragment>
       ))}
       <p ref={ref}>
-        {isFetchingNextPage
-          ? "Loading more..."
-          : hasNextPage
-          ? "Load Newer"
-          : "Nothing more to load"}
+        {isFetchingNextPage ? "Loading more..." : "Nothing more to load"}
       </p>
     </>
   );

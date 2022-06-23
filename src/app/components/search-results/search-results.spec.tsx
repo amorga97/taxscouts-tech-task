@@ -1,63 +1,62 @@
+import { useInView } from "react-intersection-observer";
 import { SearchResults } from "./search-results";
-import { predictiveSearch } from "../../../services/prh-api";
-import { act, render, screen } from "../../../utils/test-utils";
-import { QueryClient, QueryClientProvider } from "react-query";
-import userEvent from "@testing-library/user-event";
-// jest.mock("../../../services/prh-api");
+import { render, screen } from "../../../utils/test-utils";
+import { useFetchBooks } from "../../../hooks/use-fetch-books";
 
-export function renderWithClient(ui: React.ReactElement) {
-  const testQueryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-      },
-    },
-  });
-  const { rerender, ...result } = render(
-    <QueryClientProvider client={testQueryClient}>{ui}</QueryClientProvider>
-  );
-  return {
-    ...result,
-    rerender: (rerenderUi: React.ReactElement) =>
-      rerender(
-        <QueryClientProvider client={testQueryClient}>
-          {rerenderUi}
-        </QueryClientProvider>
-      ),
-  };
-}
+jest.mock("../../../hooks/use-fetch-books");
+jest.mock("react-intersection-observer");
 
 describe("Given the component SearchResults", () => {
   const mockBook = { title: "test", isbn: "1234", coverSrc: "test" };
-  // const mockPredictiveSearch = predictiveSearch as jest.Mock;
+  const mockFetchNextPage = jest.fn();
   describe("When rendering with a given input as props", () => {
     describe("And data is being fetched", () => {
-      test.todo("Renders text Loading...");
+      test("Renders text Loading...", () => {
+        (useFetchBooks as jest.Mock).mockReturnValue({ isLoading: true });
+        (useInView as jest.Mock).mockReturnValue([null, false]);
+        render(<SearchResults searchInput="test" />);
+        expect(screen.getByText(/loading.../i)).toBeInTheDocument();
+      });
     });
 
     describe("And an error occurs", () => {
-      it.todo("Renders an error message");
+      test("Renders an error message", () => {
+        (useFetchBooks as jest.Mock).mockReturnValue({ isError: true });
+        (useInView as jest.Mock).mockReturnValue([null, false]);
+        render(<SearchResults searchInput="test" />);
+        expect(screen.getByText(/error.../i)).toBeInTheDocument();
+      });
     });
 
     describe("And the data fetching is sucessful", () => {
-      // mockPredictiveSearch.mockResolvedValueOnce({
-      //   books: [mockBook],
-      //   next: 5,
-      // });
-      // mockPredictiveSearch.mockResolvedValueOnce({
-      //   books: [mockBook],
-      //   next: undefined,
-      // });
       test("Then it should display the results", async () => {
-        renderWithClient(<SearchResults searchInput="test" />);
-
-        // expect(mockPredictiveSearch).toHaveBeenCalled();
-
-        await act(async () => {
-          await new Promise((r) => setTimeout(r, 500));
+        (useFetchBooks as jest.Mock).mockReturnValue({
+          isError: false,
+          isLoading: false,
+          data: { pages: [{ books: [mockBook], next: undefined }] },
         });
-        // screen.debug();
-        expect(await screen.findByText(/loading.../i)).toBeInTheDocument();
+        (useInView as jest.Mock).mockReturnValue([null, false]);
+        render(<SearchResults searchInput="test" />);
+
+        expect(await screen.findByText(/test/i)).toBeInTheDocument();
+      });
+    });
+
+    describe("And the data fetching is sucessful and user scrolls down", () => {
+      test("Then it should display the results and fetch more data as the user scrolls", () => {
+        (useFetchBooks as jest.Mock).mockReturnValue({
+          isError: false,
+          isLoading: false,
+          fetchNextPage: mockFetchNextPage,
+          data: { pages: [{ books: [mockBook], next: undefined }] },
+          isFetchingNextPage: true,
+        });
+        (useInView as jest.Mock).mockReturnValueOnce([null, true]);
+        (useInView as jest.Mock).mockReturnValue([null, false]);
+        render(<SearchResults searchInput="test" />);
+
+        expect(screen.getByText(/test/i)).toBeInTheDocument();
+        expect(mockFetchNextPage).toHaveBeenCalled();
       });
     });
   });
