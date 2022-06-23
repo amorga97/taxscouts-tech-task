@@ -39,7 +39,7 @@ export const predictiveSearch = async (
 
   const books = (await Promise.all(promiseArray)).map((item) => {
     const { title, _links, isbn } = item;
-    return { title, isbn, coverSrc: _links[1].href };
+    return { ...new Book(title, isbn, _links[1].href) };
   });
 
   return { books, next };
