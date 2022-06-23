@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import { bookSearchReducer } from "../redux/book-search/reducer";
 
 import { ifBookSearchStore } from "../interfaces/store-interface";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 function render(
   ui: JSX.Element,
@@ -32,3 +33,25 @@ function render(
 
 export * from "@testing-library/react";
 export { render };
+
+export function renderWithClient(ui: React.ReactElement) {
+  const testQueryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  const { rerender, ...result } = render(
+    <QueryClientProvider client={testQueryClient}>{ui}</QueryClientProvider>
+  );
+  return {
+    ...result,
+    rerender: (rerenderUi: React.ReactElement) =>
+      rerender(
+        <QueryClientProvider client={testQueryClient}>
+          {rerenderUi}
+        </QueryClientProvider>
+      ),
+  };
+}
